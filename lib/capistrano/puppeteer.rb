@@ -1,4 +1,5 @@
 require 'puppeteer/version'
+require 'capistrano'
 
 module Capistrano
 

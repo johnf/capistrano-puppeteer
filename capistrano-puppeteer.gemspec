@@ -14,4 +14,6 @@ Gem::Specification.new do |gem|
   gem.name          = "capistrano-puppeteer"
   gem.require_paths = ["lib"]
   gem.version       = Capistrano::Puppeteer::VERSION
+
+  gem.add_dependency 'capistrano'
 end
