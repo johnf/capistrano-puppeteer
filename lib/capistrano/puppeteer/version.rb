@@ -1,5 +1,5 @@
 module Capistrano
-  class Puppeteer
+  module Puppeteer
     VERSION = "0.0.1"
   end
 end
