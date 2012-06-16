@@ -28,6 +28,16 @@ Then add it to your _config/deploy.rb_
 require 'capistrano/puppeteer'
 ```
 
+# Configuration
+
+Your puppet.conf requires at minimum
+
+``` ini
+[main]
+modulepath = modules
+vardir = var
+
+
 ## Usage
 
 TODO: Write usage instructions here
