@@ -16,7 +16,13 @@ module Capistrano
             run "cd #{puppet_path} && git pull --quiet"
           end
 
-          desc 'Perform a puppet run'
+          desc <<-DESC
+            Perform a puppet run.
+
+            Pass options to puppt using OPTIONS
+
+            puppet:go options="--noop"
+          DESC
           task :go do
             update
             options = ENV['options'] || ENV['OPTIONS'] || ''
