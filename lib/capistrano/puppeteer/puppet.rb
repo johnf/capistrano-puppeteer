@@ -10,7 +10,9 @@ module Capistrano
 
           namespace :puppet do
             task :update do
-              run_locally 'git push'
+              system 'git push'
+              run "#{sudo} chgrp -R admin #{puppet_path}"
+              run "#{sudo} chmod -R g+rw #{puppet_path}"
               run "cd #{puppet_path} && git pull --quiet"
             end
 
@@ -24,7 +26,7 @@ module Capistrano
             task :go do
               update
               options = ENV['options'] || ENV['OPTIONS'] || ''
-              run "cd #{puppet_path} && #{sudo} puppet apply --configfile puppet.conf manifests/site.pp #{options}"
+              run "cd #{puppet_path} && #{sudo} puppet apply --config puppet.conf --verbose #{options} manifests/site.pp"
             end
           end
         end

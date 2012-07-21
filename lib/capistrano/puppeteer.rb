@@ -3,4 +3,4 @@ require 'capistrano'
 
 require 'capistrano/puppeteer/puppet'
 require 'capistrano/puppeteer/aws'
-
+require 'capistrano/puppeteer/bootstrap'
