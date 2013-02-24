@@ -1,3 +1,6 @@
+require 'socket'
+require 'timeout'
+
 module Capistrano
   module Puppeteer
     module Bootstrap
@@ -18,10 +21,27 @@ module Capistrano
               sleep 5
 
               name = ENV['name'] or abort('please supply a name')
-              ENV['FQDN'] ||= "#{name}.#{bootstrap_domain}"
+              ENV['fqdn'] ||= "#{name}.#{bootstrap_domain}"
               aws.create
-              sleep 20 # Give SSH time to come up
+              unless wait_for_ssh
+                abort "Timed out waiting for SSH to come up on #{ENV['HOSTS']}"
+              end
               bootstrap.go
+            end
+
+            def wait_for_ssh
+              60.times do
+                begin
+                  Timeout::timeout(1) do
+                    s = TCPSocket.new(ENV['HOSTS'], 22)
+                    s.close
+                    return true
+                  end
+                rescue Timeout::Error, Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+                end
+              end
+
+              return false
             end
 
             desc 'Bootstrap the server with puppet'
