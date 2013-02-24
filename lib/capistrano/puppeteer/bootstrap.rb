@@ -33,18 +33,15 @@ module Capistrano
               github
               upgrade
               puppet_setup
-              puppet_ubuntu if exists?(:cloud_provider) && cloud_provider == 'AWS'
-              puppet.go
+              unless ENV['skip_puppet']
+                puppet_ubuntu if exists?(:cloud_provider) && cloud_provider == 'AWS'
+                puppet.go
+              end
             end
 
             task :hostname do
-              puts exists?(:cloud_provider)
               set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
-              if ENV['FQDN']
-                fqdn = ENV['FQDN']
-              else
-                fqdn = Capistrano::CLI.ui.ask "What is the full FQDN for the host"
-              end
+              fqdn = ENV['fqdn'] || Capistrano::CLI.ui.ask('What is the full fqdn for the host')
               hostname = fqdn.split('.')[0]
 
               run "#{sudo} sudo sed -i -e '/127.0.0.1/a127.0.1.1 #{fqdn} #{hostname}' /etc/hosts"

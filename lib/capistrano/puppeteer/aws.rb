@@ -37,7 +37,18 @@ module Capistrano
 
          namespace :aws do
 
-            desc 'create an instance'
+            desc <<-DESC
+              create an AWS instance.
+
+                cap aws:create [OPTIONS]
+
+              Available options:
+
+                flavour  (required) - The type of EC2 instance to create
+                name     (required) - The name of the instance, this will be used as the AWS tag
+                iam_role            - An IAM role to apply to the instance
+
+            DESC
             task :create do
               flavour = ENV['flavour'] || abort('please specify a flavour')
               name = ENV['name'] || abort('please specify name')
@@ -52,7 +63,6 @@ module Capistrano
               )
               server.wait_for { ready? }
               server.reload
-              p server
               ENV['HOSTS'] = server.public_ip_address
             end
 
@@ -75,12 +85,24 @@ module Capistrano
             end
 
             desc 'Describe an instance'
+            desc <<-DESC
+              Describe an AWS instance.
+
+                cap aws:show instance_id=...
+
+            DESC
             task :show do
-              instance_id = ENV['instance_id'] || ENV['INSTANCE_ID'] || abort('provide an instance_id')
+              instance_id = ENV['instance_id'] || abort('provide an instance_id')
               server = servers.get instance_id
               p server
             end
 
+            desc <<-DESC
+              Start an AWS instance.
+
+                cap aws:start instance_id=...
+
+            DESC
             task :start do
               instance_id = ENV['instance_id'] || abort('provide an instance_id')
 
@@ -88,6 +110,15 @@ module Capistrano
               server.start
             end
 
+            desc <<-DESC
+              Stop an AWS instance.
+
+                cap aws:stop instance_id=...
+
+                Options:
+                force=true - Forces a stop for a hung instance
+
+            DESC
             task :stop do
               instance_id = ENV['instance_id'] || abort('provide an instance_id')
               force = ENV['force'] =~ /^true$/i
@@ -96,6 +127,12 @@ module Capistrano
               server.stop force
             end
 
+            desc <<-DESC
+              Destroy an AWS instance.
+
+                cap aws:destroy instance_id=...
+
+            DESC
             task :destroy do
               instance_id = ENV['instance_id'] || abort('provide an instance_id')
 
@@ -103,13 +140,23 @@ module Capistrano
               server.destroy
             end
 
+            desc <<-DESC
+              Reboot an AWS instance.
+
+                cap aws:reboot instance_id=...
+
+                Options:
+                force=true - Forces a stop for a hung instance
+
+            DESC
             task :reboot do
               instance_id = ENV['instance_id'] || abort('provide an instance_id')
               force = ENV['force'] =~ /^true$/i
 
-              server = servers.get(@cmd_opts[:instance])
+              server = servers.get instance_id
               server.reboot force
             end
+
             def compute
               @compute ||= Fog::Compute.new(
                 :provider              => cloud_provider,

@@ -5,7 +5,7 @@ module Capistrano
       def self.extended(configuration)
         configuration.load do
           unless exists? :puppet_path
-            set(:puppet_path) { abort "Please specify the path to puppet, set :puppet_path, '/srv/puppet'" }
+            set(:puppet_path) { '/srv/puppet' } unless exists? :puppet_path
           end
 
           namespace :puppet do
