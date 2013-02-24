@@ -24,19 +24,22 @@ module Capistrano
               bootstrap.go
             end
 
-            desc 'Bootstrap the server with pupper'
+            desc 'Bootstrap the server with puppet'
             task :go do
-              system "ssh-add #{ssh_key}"
+              if exists? :ssh_key
+                system "ssh-add #{ssh_key}"
+              end
               hostname
               github
               upgrade
               puppet_setup
-              puppet_ubuntu
+              puppet_ubuntu if exists?(:cloud_provider) && cloud_provider == 'AWS'
               puppet.go
             end
 
             task :hostname do
-              set :user, 'ubuntu'
+              puts exists?(:cloud_provider)
+              set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
               if ENV['FQDN']
                 fqdn = ENV['FQDN']
               else
@@ -46,18 +49,18 @@ module Capistrano
 
               run "#{sudo} sudo sed -i -e '/127.0.0.1/a127.0.1.1 #{fqdn} #{hostname}' /etc/hosts"
               run "echo #{hostname} | #{sudo} tee /etc/hostname > /dev/null"
-              run "sudo sed -itmp -e 's/\\(domain\\|search\\).*/\\1 #{bootstrap_domain}/' /etc/resolv.conf"
+              run "#{sudo} sed -itmp -e 's/\\(domain\\|search\\).*/\\1 #{bootstrap_domain}/' /etc/resolv.conf"
               run "#{sudo} service hostname start"
             end
 
             task :github do
-              set :user, 'ubuntu'
+              set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
               run "mkdir -p .ssh"
               run "echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==' >> .ssh/known_hosts"
             end
 
             task :upgrade do
-              set :user, 'ubuntu'
+              set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
 
               run "#{sudo} apt-get -y update"
               run "DEBIAN_FRONTEND=noninteractive #{sudo} -E apt-get -y dist-upgrade"
@@ -68,7 +71,7 @@ module Capistrano
             end
 
             task :puppet_setup do
-              set :user, 'ubuntu'
+              set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
 
               release = capture 'lsb_release  --codename --short | tr -d "\n"'
               fail "unable to determine distro release" if release.empty?
@@ -83,7 +86,7 @@ module Capistrano
               run "#{sudo} apt-get install -y puppet libaugeas-ruby git"
 
               unless remote_file_exists? puppet_path
-                run "cd /tmp && git clone #{puppet_repo}"
+                run "git clone #{puppet_repo} /tmp/puppet"
                 run "#{sudo} mv /tmp/puppet #{puppet_path}"
               end
 

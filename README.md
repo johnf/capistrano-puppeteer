@@ -7,7 +7,7 @@ Some useful capistrano tasks for standalone puppet masterless puppet deployments
 Add this line to your application's Gemfile:
 
 ``` ruby
-gem 'puppeteer'
+gem 'capistrano-puppeteer'
 ```
 
 And then execute:
@@ -19,7 +19,7 @@ $ bundle
 Or install it yourself as:
 
 ``` bash
-$ gem install puppeteer
+$ gem install capistrano-puppeteer
 ```
 
 Then add it to your _config/deploy.rb_
@@ -34,9 +34,8 @@ Your puppet.conf requires at minimum
 
 ``` ini
 [main]
-modulepath = modules
-vardir = var
-
+  confdir = .
+```
 
 ## Usage
 

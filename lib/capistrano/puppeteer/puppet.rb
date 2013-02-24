@@ -11,7 +11,7 @@ module Capistrano
           namespace :puppet do
             task :update do
               system 'git push'
-              run "#{sudo} chgrp -R admin #{puppet_path}"
+              run "#{sudo} chgrp -R adm #{puppet_path}"
               run "#{sudo} chmod -R g+rw #{puppet_path}"
               run "cd #{puppet_path} && git pull --quiet"
             end
