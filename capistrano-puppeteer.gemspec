@@ -16,5 +16,5 @@ Gem::Specification.new do |gem|
   gem.version       = Capistrano::Puppeteer::VERSION
 
   gem.add_dependency 'capistrano'
-  gem.add_dependency 'fog'
+  gem.add_dependency 'fog', '>= 1.9.0'
 end
