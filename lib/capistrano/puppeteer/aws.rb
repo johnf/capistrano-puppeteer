@@ -63,7 +63,7 @@ module Capistrano
                 :tags              => { 'Name' => name },
               }
 
-              options[:iam_instance_profile] = iam_role if iam_role
+              instance_options[:iam_instance_profile_name] = iam_role if iam_role
 
               server = servers.create instance_options
               server.wait_for { ready? }

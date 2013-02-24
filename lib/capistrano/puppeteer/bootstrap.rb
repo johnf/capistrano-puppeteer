@@ -10,7 +10,7 @@ module Capistrano
           set(:bootstrap_domain) { abort "Please specify a domain, set :bootstrap_domain, 'inodes.org'" } unless exists? :bootstrap_domain
           set(:bootstrap_user)   { abort "Please specify a user, set :bootstrap_user, 'johnf'" } unless exists? :bootstrap_domain
           set(:puppet_path)      { abort "Please specify the path to puppet, set :puppet_path, '/srv/puppet'" } unless exists? :puppet_path
-          set(:puppet_repo)      { abort "Please specify the path to puppet, set :puppet_reop, 'git@...'" } unless exists? :puppet_repo
+          set(:puppet_repo)      { abort "Please specify the path to puppet, set :puppet_repo, 'git@...'" } unless exists? :puppet_repo
 
           namespace :bootstrap do
 
