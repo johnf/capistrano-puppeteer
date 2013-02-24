@@ -52,15 +52,20 @@ module Capistrano
             task :create do
               flavour = ENV['flavour'] || abort('please specify a flavour')
               name = ENV['name'] || abort('please specify name')
+              iam_role = ENV['iam_role']
 
               puts "Creating Instance..."
-              server = servers.create(
+              instance_options = {
                 :image_id          => aws_ami,
                 :availability_zone => aws_availability_zone,
                 :flavor_id         => flavour,
                 :key_name          => aws_key_name,
                 :tags              => { 'Name' => name },
-              )
+              }
+
+              options[:iam_instance_profile] = iam_role if iam_role
+
+              server = servers.create instance_options
               server.wait_for { ready? }
               server.reload
               ENV['HOSTS'] = server.public_ip_address
