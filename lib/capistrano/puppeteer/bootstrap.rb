@@ -14,7 +14,11 @@ module Capistrano
 
           namespace :bootstrap do
 
-            desc 'Create and bootstrap the server'
+            desc <<-DESC
+              Create and bootstrap the server.
+
+              Needs options from aws:create.
+            DESC
             task :create do
               puts "NOTE: Add host to puppet first and git push"
               puts

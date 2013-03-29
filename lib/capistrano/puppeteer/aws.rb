@@ -55,12 +55,15 @@ module Capistrano
                 flavour  (required) - The type of EC2 instance to create
                 name     (required) - The name of the instance, this will be used as the AWS tag
                 iam_role            - An IAM role to apply to the instance
+                ebs      (optional) - Set EBS to standard or optimised (default:standard)
 
             DESC
             task :create do
               flavour = ENV['flavour'] || abort('please specify a flavour')
               name = ENV['name'] || abort('please specify name')
               iam_role = ENV['iam_role']
+              iam_role = ENV['iam_role']
+              ebs_optimised = ENV['ebs'] == 'optimised' || ENV['ebs'] == 'optimized'
 
               puts "Creating Instance..."
               instance_options = {
@@ -69,6 +72,7 @@ module Capistrano
                 :flavor_id         => flavour,
                 :key_name          => aws_key_name,
                 :tags              => { 'Name' => name },
+                :ebs_optimized     => ebs_optimised,
               }
 
               instance_options[:iam_instance_profile_name] = iam_role if iam_role
