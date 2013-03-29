@@ -35,13 +35,13 @@ module Capistrano
       def self.extended(configuration)
         configuration.load do
           set(:cloud_provider)        { abort "Please specify a cloud provider, set :cloud_provider, 'AWS'" } unless exists? :cloud_provider
-          set(:aws_ami)               { abort "Please specify a AWS AMI, set :aws_ami, 'ami-a29943cb'" } unless exists? :aws_ami
+          set(:aws_ami)               { abort "Please specify an AWS AMI, set :aws_ami, 'ami-a29943cb'" } unless exists? :aws_ami
           set(:aws_secret_access_key) { abort "Please specify an AWS Access Key, set :aws_secret_access_key, 'XXXX'" } unless exists? :aws_secret_access_key
-          set(:aws_access_key_id)     { abort "Please specify a AWS AMI, set :aws_access_key_id, 'ZZZ'" } unless exists? :aws_access_key_id
-          set(:aws_region)            { abort "Please specify a AWS AMI, set :aws_region, 'us-west-1'" } unless exists? :aws_availability_zone
-          set(:aws_availability_zone) { abort "Please specify a AWS AMI, set :aws_availability_zone, 'us-west-1a'" } unless exists? :aws_availability_zone
-          set(:aws_key_name)          { abort "Please specify a AWS AMI, set :aws_key_name, 'default'" } unless exists? :aws_key_name
-          set(:aws_ssh_key)           { abort "Please specify a AWS AMI, set :aws_ssh_key, 'config/aws.pem'" } unless exists? :aws_ssh_key
+          set(:aws_access_key_id)     { abort "Please specify an AWS AMI, set :aws_access_key_id, 'ZZZ'" } unless exists? :aws_access_key_id
+          set(:aws_region)            { abort "Please specify an AWS Region, set :aws_region, 'us-west-1'" } unless exists? :aws_availability_zone
+          set(:aws_availability_zone) { abort "Please specify an AWS AZ, set :aws_availability_zone, 'us-west-1a'" } unless exists? :aws_availability_zone
+          set(:aws_key_name)          { abort "Please specify an AWS Key Name, set :aws_key_name, 'default'" } unless exists? :aws_key_name
+          set(:aws_ssh_key)           { abort "Please specify an AWS SSH Key path, set :aws_ssh_key, 'config/aws.pem'" } unless exists? :aws_ssh_key
 
          namespace :aws do
 
@@ -55,7 +55,8 @@ module Capistrano
                 flavour  (required) - The type of EC2 instance to create
                 name     (required) - The name of the instance, this will be used as the AWS tag
                 iam_role            - An IAM role to apply to the instance
-                ebs      (optional) - Set EBS to standard or optimised (default:standard)
+                ebs                 - Set EBS to standard or optimised (default:standard)
+                az                  - Choose an availability zone
 
             DESC
             task :create do
@@ -64,11 +65,12 @@ module Capistrano
               iam_role = ENV['iam_role']
               iam_role = ENV['iam_role']
               ebs_optimised = ENV['ebs'] == 'optimised' || ENV['ebs'] == 'optimized'
+              availability_zone = ENV['az'] || aws_availability_zone
 
               puts "Creating Instance..."
               instance_options = {
                 :image_id          => aws_ami,
-                :availability_zone => aws_availability_zone,
+                :availability_zone => availability_zone,
                 :flavor_id         => flavour,
                 :key_name          => aws_key_name,
                 :tags              => { 'Name' => name },

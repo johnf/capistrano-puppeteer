@@ -3,6 +3,7 @@
 * More documentation
 * Cleaned up bootstrap methods
 * Update AWS flavours
+* Add ability to specify AWS AZ
 
 # 0.0.2 (2013-02-23)
 
