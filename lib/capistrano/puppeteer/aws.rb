@@ -4,24 +4,32 @@ module Capistrano
   module Puppeteer
     module AWS
       FLAVOURS = {
-        't1.micro'    => {:ram => 0.6,  :io => 'low',      :compute => 2,    :price => 0.02},
+        't1.micro'    => {:ram => 0.6,  :io => 'low',      :compute => 2,    :price => 0.02,  :ebs_opt => false, :disk => 0 },
 
-        'm1.small'    => {:ram => 1.7,  :io => 'moderate', :compute => 1,    :price => 0.08},
-        'm1.medium'   => {:ram => 3.75, :io => 'moderate', :compute => 2,    :price => 0.16},
-        'm1.large'    => {:ram => 7.5,  :io => 'high',     :compute => 4,    :price => 0.32},
-        'm1.xlarge'   => {:ram => 15,   :io => 'high',     :compute => 8,    :price => 0.64},
+        'm1.small'    => {:ram => 1.7,  :io => 'moderate', :compute => 1,    :price => 0.06,  :ebs_opt => false, :disk => 160 },
+        'm1.medium'   => {:ram => 3.75, :io => 'moderate', :compute => 2,    :price => 0.12,  :ebs_opt => false, :disk => 410 },
+        'm1.large'    => {:ram => 7.5,  :io => 'moderate', :compute => 4,    :price => 0.24,  :ebs_opt => 500,   :disk => 850 },
+        'm1.xlarge'   => {:ram => 15,   :io => 'high',     :compute => 8,    :price => 0.48,  :ebs_opt => 1000,  :disk => 1690 },
 
-        'm2.xlarge'   => {:ram => 17.1, :io => 'moderate', :compute => 6.5,  :price => 0.45},
-        'm2.2xlarge'  => {:ram => 34.2, :io => 'high',     :compute => 13,   :price => 0.90},
-        'm2.4xlarge'  => {:ram => 68.4, :io => 'high',     :compute => 26,   :price => 1.80},
+        'm3.xlarge'   => {:ram => 15,   :io => 'moderate', :compute => 13,   :price => 0.50,  :ebs_opt => 500,   :disk => 0 },
+        'm3.2xlarge'  => {:ram => 30,   :io => 'high',     :compute => 26,   :price => 1.00,  :ebs_opt => 1000,  :disk => 0 },
 
-        'c1.medium'   => {:ram => 1.7,  :io => 'moderate', :compute => 5,    :price => 0.165},
-        'c1.xlarge'   => {:ram => 7,    :io => 'high',     :compute => 20,   :price => 0.66},
+        'm2.xlarge'   => {:ram => 17.1, :io => 'moderate', :compute => 6.5,  :price => 0.41,  :ebs_opt => false, :disk => 420 },
+        'm2.2xlarge'  => {:ram => 34.2, :io => 'high',     :compute => 13,   :price => 0.82,  :ebs_opt => 500,   :disk => 850 },
+        'm2.4xlarge'  => {:ram => 68.4, :io => 'high',     :compute => 26,   :price => 1.64,  :ebs_opt => 1000,  :disk => 1690 },
 
-        'cc1.4xlarge' => {:ram => 23,   :io => 'v.high',   :compute => 33.5, :price => 1.30},
-        'cc1.8xlarge' => {:ram => 60.5, :io => 'v.high',   :compute => 88  , :price => 2.40},
+        'c1.medium'   => {:ram => 1.7,  :io => 'moderate', :compute => 5,    :price => 0.145, :ebs_opt => false, :disk => 350 },
+        'c1.xlarge'   => {:ram => 7,    :io => 'high',     :compute => 20,   :price => 0.58,  :ebs_opt => 1000,  :disk => 1690 },
 
-        'cg1.4xlarge' => {:ram => 22,   :io => 'v.high',   :compute => 33.5, :price => 2.10},
+        'cc2.8xlarge' => {:ram => 60.5, :io => 'v.high',   :compute => 88,   :price => 2.40,  :ebs_opt => false, :disk => 3370 },
+
+        'cr1.8xlarge' => {:ram => 224,  :io => 'v.high',   :compute => 88,   :price => 3.50,  :ebs_opt => false, :disk => 240,   :other => 'ssd' },
+
+        'cg1.4xlarge' => {:ram => 22,   :io => 'v.high',   :compute => 33.5, :price => 2.10,  :ebs_opt => false, :disk => 1690,  :other => 'gpu' },
+
+        'hi1.4xlarge' => {:ram => 60.5, :io => 'v.high',   :compute => 35,   :price => 3.10,  :ebs_opt => false, :disk => 1024,  :other => 'ssd' },
+
+        'hs1.8xlarge' => {:ram => 117,  :io => 'v.high',   :compute => 35,   :price => 4.60,  :ebs_opt => false, :disk => 48000, :other => 'disk' },
       }
 
       def self.extended(configuration)
@@ -72,11 +80,18 @@ module Capistrano
             end
 
 
-            desc 'List Instance types'
+            desc <<-DESC
+              List AWS Instance types.
+
+              The pricing here is simply for reference and is the monthly spend for
+              us-east-1 as of 2013-03-29.
+            DESC
             task :flavours do
-              puts "%-11s  %-11s   %-7s %-5s  %s" % %w[Name Price/Month RAM Units IO]
+        #'hs1.8xlarge' => {:ram => 117,  :io => 'v.high',   :compute => 35,   :price => 4.60,  :ebs_opt => false, :disk => 48000, :other => 'disk' },
+              puts '%-11s  %-9s  %-8s  %-5s  %-8s  %-8s  %-9s  %-s' % %w[Name Monthly RAM Units IO Storage EBS Other]
               Capistrano::Puppeteer::AWS::FLAVOURS.each do |flavor, opts|
-                puts "%-11s  $ %7.2f   %4.1f GB   %4.1f   %s" % [flavor, opts[:price] * 720, opts[:ram], opts[:compute], opts[:io]]
+                bits = [flavor, opts[:price] * 720, opts[:ram], opts[:compute], opts[:io], opts[:disk], (opts[:ebs_opt] ? "#{opts[:ebs_opt]} Mbps" : ''), opts[:other]]
+                puts '%-11s  $ %7.2f  %5.1f GB  %5.1f  %8s  %5d GB  %9s  %s' % bits
               end
             end
 

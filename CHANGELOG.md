@@ -2,6 +2,7 @@
 
 * More documentation
 * Cleaned up bootstrap methods
+* Update AWS flavours
 
 # 0.0.2 (2013-02-23)
 
