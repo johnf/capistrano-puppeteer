@@ -44,7 +44,21 @@ module Capistrano
               return false
             end
 
-            desc 'Bootstrap the server with puppet'
+            desc <<-DESC
+              Bootstrap the server with puppet.
+
+                * Sets the hostname
+                * Adds github SSH keys to known_hosts
+                * Upgrades all the packages
+                * Installs and configures pupper
+                * Performs puppet runs
+
+              Options:
+
+                 skip_puppet=true     (optional)   to skip the puppet run
+                 fqdn=foo.example.com (optional)   the hostname of the new instance (prompted if not set)
+
+            DESC
             task :go do
               if exists? :ssh_key
                 system "ssh-add #{ssh_key}"
@@ -54,7 +68,12 @@ module Capistrano
               upgrade
               puppet_setup
               unless ENV['skip_puppet']
-                puppet_ubuntu if exists?(:cloud_provider) && cloud_provider == 'AWS'
+                if exists?(:cloud_provider) && cloud_provider == 'AWS'
+                  # Run puppet once as the ubuntu user to give puppet a chance to create out standard user
+                  set :user, 'ubuntu'
+                  puppet.go
+                  set :user, bootstrap_user
+                end
                 puppet.go
               end
             end
@@ -74,6 +93,9 @@ module Capistrano
               set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
               run "mkdir -p .ssh"
               run "echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==' >> .ssh/known_hosts"
+
+              run "#{sudo} mkdir -p /home/#{bootstrap_user}/.ssh"
+              run "echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==' | #{sudo} tee /home/#{bootstrap_user}/.ssh/known_hosts"
             end
 
             task :upgrade do
@@ -107,20 +129,10 @@ module Capistrano
                 run "#{sudo} mv /tmp/puppet #{puppet_path}"
               end
 
-              run "#{sudo} mkdir -p /home/#{bootstrap_user}/.ssh"
-              run "#{sudo} echo 'github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==' | #{sudo} tee /home/#{bootstrap_user}/.ssh/known_hosts"
-            end
-
-            task :puppet_ubuntu do
-              set :user, 'ubuntu'
-
-              run 'cd /srv/puppet && git pull'
-
-              puppet.go
             end
 
             task :reboot do
-              set :user, ENV['USER']
+              set :user, bootstrap_user
 
               run "#{sudo} reboot"
             end
