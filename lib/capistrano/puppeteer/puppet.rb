@@ -10,10 +10,17 @@ module Capistrano
 
           namespace :puppet do
             task :update do
-              system 'git push'
-              run "#{sudo} chgrp -R adm #{puppet_path}"
-              run "#{sudo} chmod -R g+rw #{puppet_path}"
-              run "cd #{puppet_path} && git pull --quiet"
+              fast = ENV['fast'] || ENV['FAST'] || ''
+              fast = fast =~ /true|TRUE|yes|YES/
+
+              unless fast
+                system 'git push'
+                run "#{sudo} chgrp -R adm #{puppet_path}"
+                run "#{sudo} chmod -R g+rw #{puppet_path}"
+                run "cd #{puppet_path} && git pull --quiet"
+                # TODO Support other methods besides henson
+                #run "cd #{puppet_path} && if [ -f Puppetfile ]; then henson; fi"
+              end
             end
 
             desc <<-DESC
@@ -25,7 +32,22 @@ module Capistrano
             DESC
             task :go do
               update
+
               options = ENV['options'] || ENV['OPTIONS'] || ''
+              apply   = ENV['apply'] || ENV['APPLY'] || ''
+
+              apply = apply =~ /true|TRUE|yes|YES/
+                p apply
+
+              puppet_options  = ['--noop']
+              if options
+                puppet_options += options.split(' ')
+              end
+
+              puppet_options.delete('--noop') if apply
+
+              options = puppet_options.join(' ')
+
               run "cd #{puppet_path} && #{sudo} puppet apply --config puppet.conf --verbose #{options} manifests/site.pp"
             end
           end
