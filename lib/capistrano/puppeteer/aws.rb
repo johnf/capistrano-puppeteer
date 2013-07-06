@@ -57,31 +57,52 @@ module Capistrano
                 iam_role            - An IAM role to apply to the instance
                 ebs                 - Set EBS to standard or optimised (default:standard)
                 az                  - Choose an availability zone
+                subnet_id           - Choose a subnet
+                security_group_ids  - security_group_ids
+                elastic_ip          - Set true to attach an elastic IP
 
             DESC
             task :create do
               flavour = ENV['flavour'] || abort('please specify a flavour')
               name = ENV['name'] || abort('please specify name')
               iam_role = ENV['iam_role']
-              iam_role = ENV['iam_role']
               ebs_optimised = ENV['ebs'] == 'optimised' || ENV['ebs'] == 'optimized'
               availability_zone = ENV['az'] || aws_availability_zone
+              subnet_id = ENV['subnet_id']
+              security_group_ids = ENV['security_group_ids']
+              elastic_ip = ENV['elastic_ip'] == 'true'
 
               puts "Creating Instance..."
               instance_options = {
-                :image_id          => aws_ami,
-                :availability_zone => availability_zone,
-                :flavor_id         => flavour,
-                :key_name          => aws_key_name,
-                :tags              => { 'Name' => name },
-                :ebs_optimized     => ebs_optimised,
+                :image_id           => aws_ami,
+                :availability_zone  => availability_zone,
+                :subnet_id          => subnet_id,
+                :security_group_ids => security_group_ids.split(/,/),
+                :flavor_id          => flavour,
+                :key_name           => aws_key_name,
+                :tags               => { 'Name' => name },
+                :ebs_optimized      => ebs_optimised,
               }
+
+              instance_options.delete(:availability_zone) if instance_options[:subnet_id]
 
               instance_options[:iam_instance_profile_name] = iam_role if iam_role
 
               server = servers.create instance_options
               server.wait_for { ready? }
               server.reload
+
+              if elastic_ip
+                address = compute.addresses.select { |a| a.server_id.nil? }.first
+                if address.nil?
+                  address = compute.addresses.create :domain => 'vpc'
+                end
+
+                address.server = server
+              end
+
+              server.reload
+
               ENV['HOSTS'] = server.public_ip_address
             end
 

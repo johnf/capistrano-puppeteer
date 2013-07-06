@@ -22,7 +22,6 @@ module Capistrano
             task :create do
               puts "NOTE: Add host to puppet first and git push"
               puts
-              sleep 5
 
               name = ENV['name'] or abort('please supply a name')
               ENV['fqdn'] ||= "#{name}.#{bootstrap_domain}"
