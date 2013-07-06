@@ -121,7 +121,7 @@ module Capistrano
               # add puppetlabs apt repos
               unless remote_file_exists? puppet_path
                 filename = '/etc/apt/sources.list.d/puppetlabs.list'
-                run "echo 'deb http://apt.puppetlabs.com/ #{release} main' | #{sudo} tee #{filename}"
+                run "echo 'deb http://apt.puppetlabs.com/ #{release} main dependencies' | #{sudo} tee #{filename}"
               end
               run "#{sudo} apt-key adv --keyserver keyserver.ubuntu.com --recv 4BD6EC30"
               run "#{sudo} apt-get -yq update"
