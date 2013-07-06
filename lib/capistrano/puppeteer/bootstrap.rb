@@ -125,7 +125,7 @@ module Capistrano
               end
               run "#{sudo} apt-key adv --keyserver keyserver.ubuntu.com --recv 4BD6EC30"
               run "#{sudo} apt-get -yq update"
-              run "#{sudo} apt-get purge ruby1.8.7 ruby1.8 ruby"
+              run "#{sudo} apt-get purge ruby1.8 ruby"
               run "#{sudo} apt-get install -y ruby1.9.3"
               run "cd /tmp && wget http://us-west-2.ec2.archive.ubuntu.com/ubuntu/pool/universe/r/ruby-thor/ruby-thor_0.15.3-1_all.deb"
               run "cd /tmp && wget http://us-west-2.ec2.archive.ubuntu.com/ubuntu/pool/universe/r/ruby-net-http-persistent/ruby-net-http-persistent_2.7-2_all.deb"
