@@ -104,8 +104,8 @@ module Capistrano
             task :upgrade do
               set :user, 'ubuntu' if exists?(:cloud_provider) && cloud_provider == 'AWS'
 
-              run "#{sudo} apt-get -y update"
-              run "DEBIAN_FRONTEND=noninteractive #{sudo} -E apt-get -y dist-upgrade"
+              run "#{sudo} apt-get --quiet --yes update"
+              run "DEBIAN_FRONTEND=noninteractive #{sudo} -E apt-get --yes dist-upgrade"
             end
 
             def remote_file_exists?(full_path)
