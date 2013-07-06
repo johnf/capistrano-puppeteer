@@ -133,6 +133,7 @@ module Capistrano
               run "cd /tmp && wget http://us-west-2.ec2.archive.ubuntu.com/ubuntu/pool/main/r/ruby-shadow/ruby-shadow_2.1.4-2_amd64.deb"
               run "cd /tmp && #{sudo} dpkg -i *deb"
               run "#{sudo} apt-get install -y puppet libaugeas-ruby git"
+              run "#{sudo} apt-get purge ruby1.8 ruby"
 
               unless remote_file_exists? puppet_path
                 run "git clone #{puppet_repo} /tmp/puppet"
