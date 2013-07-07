@@ -16,7 +16,7 @@ module Capistrano
               unless fast
                 system 'git push'
                 if bootstrap_user
-                  run "#{sudo} chown -R #{bootstrap_user} #{puppet_path}"
+                  run "if id #{bootstrap_user} > /dev/null 2>&1 ; then #{sudo} chown -R #{bootstrap_user} #{puppet_path}; fi"
                 end
                 run "#{sudo} chgrp -R adm #{puppet_path}"
                 run "#{sudo} chmod -R g+rw #{puppet_path}"
