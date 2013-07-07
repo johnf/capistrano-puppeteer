@@ -15,6 +15,9 @@ module Capistrano
 
               unless fast
                 system 'git push'
+                if bootstrap_user
+                  run "#{sudo} chown -R bootstrap_user #{puppet_path}"
+                end
                 run "#{sudo} chgrp -R adm #{puppet_path}"
                 run "#{sudo} chmod -R g+rw #{puppet_path}"
                 run "cd #{puppet_path} && git pull --quiet"
