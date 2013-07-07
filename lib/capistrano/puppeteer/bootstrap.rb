@@ -70,6 +70,7 @@ module Capistrano
               github
               upgrade
               puppet_setup
+              ENV['apply'] = 'true'
               unless ENV['skip_puppet']
                 if exists?(:cloud_provider) && cloud_provider == 'AWS'
                   # Run puppet once as the ubuntu user to give puppet a chance to create out standard user
