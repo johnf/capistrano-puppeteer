@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Capistrano::Puppeteer::VERSION
 
-  gem.add_dependency 'capistrano'
+  gem.add_dependency 'capistrano', '~> 2'
   gem.add_dependency 'fog', '>= 1.9.0'
 
   gem.add_development_dependency 'rake'
