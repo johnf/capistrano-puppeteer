@@ -16,7 +16,7 @@ module Capistrano
                      when /pull/i then 'pull'
                      end
 
-              return if fast == 'none'
+              next if fast == 'none'
 
               system 'git push'
               run "#{sudo} chown -R `id -un` #{puppet_path}; fi"
@@ -24,7 +24,7 @@ module Capistrano
               run "#{sudo} chmod -R g+rw #{puppet_path}"
               run "cd #{puppet_path} && git pull --quiet"
 
-              return if fast == 'pull'
+              next if fast == 'pull'
 
               run "cd #{puppet_path} && if [ -f Gemfile ]; then bundle install --deployment --without=development --binstubs --quiet ; fi"
               # TODO Support other methods besides henson
