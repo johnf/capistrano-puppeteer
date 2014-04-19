@@ -45,7 +45,6 @@ module Capistrano
               apply   = ENV['apply'] || ENV['APPLY'] || ''
 
               apply = apply =~ /true|TRUE|yes|YES/
-                p apply
 
               puppet_options  = ['--noop']
               if options
