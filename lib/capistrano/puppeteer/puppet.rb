@@ -26,9 +26,9 @@ module Capistrano
               run "#{sudo} chown -R `id -un` #{puppet_path}; fi"
               run "#{sudo} chgrp -R adm #{puppet_path}"
               run "#{sudo} chmod -R g+rw #{puppet_path}"
-              run "cd #{puppet_path} && if [ -f Gemfile ]; then bundle install --deployment --without=development --binstubs --quiet ; fi"
+              run "cd #{puppet_path} && if [ -f Gemfile ]; then bundle install --deployment --without=development --quiet ; fi"
               # TODO Support other methods besides henson
-              run "cd #{puppet_path} && if [ -f Puppetfile ]; then bundle exec bin/henson; fi"
+              run "cd #{puppet_path} && if [ -f Puppetfile ]; then bundle exec henson; fi"
             end
 
             desc <<-DESC
