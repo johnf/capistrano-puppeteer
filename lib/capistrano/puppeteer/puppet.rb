@@ -10,19 +10,25 @@ module Capistrano
 
           namespace :puppet do
             task :update do
-              fast = ENV['fast'] || ENV['FAST'] || ''
-              fast = fast =~ /true|TRUE|yes|YES/
+              ENV['fast'] ||= ENV['FAST']
+              fast = case ENV['fast']
+                     when nil then 'none'
+                     when /pull/i then 'pull'
+                     end
 
-              unless fast
-                system 'git push'
-                run "#{sudo} chown -R `id -un` #{puppet_path}; fi"
-                run "#{sudo} chgrp -R adm #{puppet_path}"
-                run "#{sudo} chmod -R g+rw #{puppet_path}"
-                run "cd #{puppet_path} && git pull --quiet"
-                run "cd #{puppet_path} && if [ -f Gemfile ]; then bundle install --deployment --without=development --binstubs --quiet ; fi"
-                # TODO Support other methods besides henson
-                run "cd #{puppet_path} && if [ -f Puppetfile ]; then bundle exec bin/henson; fi"
-              end
+              return if fast == 'none'
+
+              system 'git push'
+              run "#{sudo} chown -R `id -un` #{puppet_path}; fi"
+              run "#{sudo} chgrp -R adm #{puppet_path}"
+              run "#{sudo} chmod -R g+rw #{puppet_path}"
+              run "cd #{puppet_path} && git pull --quiet"
+
+              return if fast == 'pull'
+
+              run "cd #{puppet_path} && if [ -f Gemfile ]; then bundle install --deployment --without=development --binstubs --quiet ; fi"
+              # TODO Support other methods besides henson
+              run "cd #{puppet_path} && if [ -f Puppetfile ]; then bundle exec bin/henson; fi"
             end
 
             desc <<-DESC
