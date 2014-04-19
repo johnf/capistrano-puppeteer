@@ -14,6 +14,8 @@ module Capistrano
               fast = case ENV['fast']
                      when nil then 'none'
                      when /pull/i then 'pull'
+                     else
+                       'all'
                      end
 
               next if fast == 'none'
