@@ -12,10 +12,10 @@ module Capistrano
             task :update do
               ENV['fast'] ||= ENV['FAST']
               fast = case ENV['fast']
-                     when nil then 'none'
+                     when nil then 'all'
                      when /pull/i then 'pull'
                      else
-                       'all'
+                       'none'
                      end
 
               next if fast == 'none'
